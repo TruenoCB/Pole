@@ -1,27 +1,25 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"poleweb"
 )
 
 func main() {
 	r := poleweb.New()
-	r.GET("/", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "URL.Path = %q\n", req.URL.Path)
+	r.GET("/", func(c *poleweb.Context) {
+		c.HTML(http.StatusOK, "<h1>Hello Pole</h1>")
+	})
+	r.GET("/hello", func(c *poleweb.Context) {
+		// url后带上参数
+		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Path)
 	})
 
-	r.GET("/hello", func(w http.ResponseWriter, req *http.Request) {
-		//打印请求头部信息
-		for k, v := range req.Header {
-			fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
-		}
-	})
-
-	r.GET("/pole", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "its a concise frame")
-
+	r.POST("/login", func(c *poleweb.Context) {
+		c.JSON(http.StatusOK, poleweb.H{
+			"username": c.PostForm("username"),
+			"password": c.PostForm("password"),
+		})
 	})
 
 	r.Run(":1018")
