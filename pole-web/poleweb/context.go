@@ -6,7 +6,6 @@ import (
 	"net/http"
 )
 
-
 type H map[string]interface{}
 
 type Context struct {
@@ -18,6 +17,7 @@ type Context struct {
 	Method string
 	// response info
 	StatusCode int
+	Params     map[string]string
 }
 
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
@@ -70,4 +70,10 @@ func (c *Context) HTML(code int, html string) {
 	c.SetHeader("Content-Type", "text/html")
 	c.Status(code)
 	c.Writer.Write([]byte(html))
+}
+
+// 动态路由参数
+func (c *Context) Param(key string) string {
+	value, _ := c.Params[key]
+	return value
 }
