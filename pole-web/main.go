@@ -106,5 +106,20 @@ func main() {
 		})
 	})
 
+	go func() {
+		r2 := poleweb.Default()
+		r2.GET("/", func(c *poleweb.Context) {
+			c.String(http.StatusOK, "Hello PoleWeb\n")
+		})
+		// index out of range for testing Recovery()
+		r2.GET("/panic", func(c *poleweb.Context) {
+			names := []string{"trueno"}
+			c.String(http.StatusOK, names[100])
+		})
+
+		r2.Run(":1019")
+	}()
+
 	r.Run(":1018")
+
 }
