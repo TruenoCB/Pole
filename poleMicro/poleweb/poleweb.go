@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/TruenoCB/poleweb/internal/utils"
 	"github.com/TruenoCB/poleweb/render"
@@ -19,6 +20,7 @@ type Engine struct {
 	funcMap     template.FuncMap
 	HTMLRender  render.HTMLRender
 	middles     []MiddlewareFunc
+	pool        sync.Pool
 	OpenGateway bool
 }
 
@@ -27,21 +29,36 @@ func New() *Engine {
 		router: router{},
 	}
 	engine.router.engine = engine
+	engine.pool.New = func() any {
+		return engine.allocateContext()
+	}
 	return engine
 }
 
+func (e *Engine) allocateContext() any {
+	return &Context{engine: e}
+}
+
 func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := e.pool.Get().(*Context)
+	ctx.W = w
+	ctx.R = r
+	e.httpRequestHandle(ctx, w, r)
+	e.pool.Put(ctx)
+}
+
+func (e *Engine) httpRequestHandle(ctx *Context, w http.ResponseWriter, r *http.Request) {
 	method := r.Method
 	for _, group := range e.routerGroups {
 		routerName := utils.SubStringLast(r.URL.Path, "/"+group.name)
 		// get/1
 		node := group.treeNode.Get(routerName)
 		if node != nil && node.isEnd {
-			ctx := &Context{
+			/* ctx := &Context{   已被sync.Pool池化
 				W:      w,
 				R:      r,
 				engine: e,
-			}
+			} */
 			//路由匹配上了
 			handle, ok := group.handleFuncMap[node.routerName][ANY]
 			if ok {
