@@ -1,3 +1,3 @@
 module github.com/TruenoCB/blog
 
-go 1.20
+go 1.19

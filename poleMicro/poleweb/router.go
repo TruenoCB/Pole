@@ -1,5 +1,7 @@
 package poleweb
 
+import "net/http"
+
 const ANY = "ANY"
 
 type router struct {
@@ -46,6 +48,13 @@ func (r *routerGroup) handle(name string, method string, handlerFunc HandlerFunc
 
 func (r *routerGroup) Any(name string, handlerFunc HandlerFunc, middlewareFunc ...MiddlewareFunc) {
 	r.handle(name, ANY, handlerFunc, middlewareFunc...)
+}
+
+func (r *routerGroup) Get(name string, handlerFunc HandlerFunc, middlewareFunc ...MiddlewareFunc) {
+	r.handle(name, http.MethodGet, handlerFunc, middlewareFunc...)
+}
+func (r *routerGroup) Post(name string, handlerFunc HandlerFunc, middlewareFunc ...MiddlewareFunc) {
+	r.handle(name, http.MethodPost, handlerFunc, middlewareFunc...)
 }
 
 func (r *routerGroup) Use(middlewareFunc ...MiddlewareFunc) {

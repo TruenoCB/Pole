@@ -9,14 +9,17 @@ import (
 )
 
 type User struct {
-	Name string
+	Name      string   `xml:"name" json:"name" polevalidate:"required"`
+	Age       int      `xml:"age" json:"age" validate:"required,max=50,min=18"`
+	Addresses []string `json:"addresses"`
+	Email     string   `json:"email" polevalidate:"required"`
 }
 
 func Log(next poleweb.HandlerFunc) poleweb.HandlerFunc {
 	return func(ctx *poleweb.Context) {
-		fmt.Println("打印请求参数")
+		log.Println("打印请求参数")
 		next(ctx)
-		fmt.Println("返回执行时间")
+		log.Println("返回执行时间")
 	}
 }
 
@@ -33,7 +36,7 @@ func main() {
 		ctx.FileFromFS("car.jpg", http.Dir("blog/tpl"))
 	})
 	test.Any("/login", func(ctx *poleweb.Context) {
-		user := User{"jack"}
+		user := User{Name: "jack"}
 		log.Println("render模板接口")
 		err := ctx.Template("login.html", user)
 		if err != nil {
@@ -48,5 +51,15 @@ func main() {
 		log.Println("中间件链式调用")
 		ctx.HTML(http.StatusOK, "<h1>中间件链式调用</h1>")
 	}, Log)
+
+	test.Post("/files", func(ctx *poleweb.Context) {
+		m, _ := ctx.GetPostFormMap("user")
+		files := ctx.FormFiles("file")
+		for _, file := range files {
+			ctx.SaveUploadedFile(file, "blog/upload/"+file.Filename)
+		}
+		ctx.JSON(http.StatusOK, m)
+	})
+
 	engine.Run()
 }
