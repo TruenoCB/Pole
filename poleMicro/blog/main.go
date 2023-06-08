@@ -61,5 +61,17 @@ func main() {
 		ctx.JSON(http.StatusOK, m)
 	})
 
+	test.Post("/jsonParam", func(ctx *poleweb.Context) {
+		user := make([]User, 0)
+		ctx.DisallowUnknownFields = true
+		//ctx.IsValidate = true
+		err := ctx.BindJson(&user)
+		if err == nil {
+			ctx.JSON(http.StatusOK, user)
+		} else {
+			log.Println(err)
+		}
+	})
+
 	engine.Run()
 }
