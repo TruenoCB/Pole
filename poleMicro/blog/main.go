@@ -24,8 +24,8 @@ func Log(next poleweb.HandlerFunc) poleweb.HandlerFunc {
 }
 
 func main() {
-	engine := poleweb.New()
-	engine.LoadTemplate("blog/tpl/*.html")
+	engine := poleweb.Default()
+	engine.LoadTemplate("tpl/*.html")
 	test := engine.Group("test")
 	test.Any("/t1", func(ctx *poleweb.Context) {
 		log.Println("handler")
@@ -33,7 +33,7 @@ func main() {
 	})
 	test.Any("/t1/:id/car", func(ctx *poleweb.Context) {
 		log.Println("文件请求")
-		ctx.FileFromFS("car.jpg", http.Dir("blog/tpl"))
+		ctx.FileFromFS("car.jpg", http.Dir("tpl"))
 	})
 	test.Any("/login", func(ctx *poleweb.Context) {
 		user := User{Name: "jack"}
@@ -56,7 +56,7 @@ func main() {
 		m, _ := ctx.GetPostFormMap("user")
 		files := ctx.FormFiles("file")
 		for _, file := range files {
-			ctx.SaveUploadedFile(file, "blog/upload/"+file.Filename)
+			ctx.SaveUploadedFile(file, "upload/"+file.Filename)
 		}
 		ctx.JSON(http.StatusOK, m)
 	})

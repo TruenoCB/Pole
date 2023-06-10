@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/TruenoCB/poleweb/binding"
+	poleLog "github.com/TruenoCB/poleweb/log"
 	"github.com/TruenoCB/poleweb/render"
 )
 
@@ -29,6 +30,7 @@ type Context struct {
 	Keys                  map[string]any
 	mu                    sync.RWMutex
 	sameSite              http.SameSite
+	Logger                *poleLog.Logger
 }
 
 func (c *Context) Render(statusCode int, r render.Render) error {
@@ -57,6 +59,10 @@ func (c *Context) HTML(status int, html string) error {
 func (c *Context) JSON(status int, data any) error {
 	//状态是200 默认不设置的话 如果调用了 write这个方法 实际上默认返回状态 200
 	return c.Render(status, &render.JSON{Data: data})
+}
+
+func (c *Context) String(status int, format string, values ...any) error {
+	return c.Render(status, &render.String{Format: format, Data: values})
 }
 
 func (c *Context) Template(name string, data any) error {
@@ -379,4 +385,8 @@ func (c *Context) MustBindWith(obj any, bind binding.Binding) error {
 
 func (c *Context) ShouldBind(obj any, bind binding.Binding) error {
 	return bind.Bind(c.R, obj)
+}
+
+func (c *Context) Fail(code int, msg string) {
+	c.String(code, msg)
 }

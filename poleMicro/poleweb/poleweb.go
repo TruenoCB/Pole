@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/TruenoCB/poleweb/internal/utils"
+	poleLog "github.com/TruenoCB/poleweb/log"
 	"github.com/TruenoCB/poleweb/render"
 )
 
@@ -22,6 +23,7 @@ type Engine struct {
 	middles     []MiddlewareFunc
 	pool        sync.Pool
 	OpenGateway bool
+	Logger      *poleLog.Logger
 }
 
 func New() *Engine {
@@ -33,6 +35,18 @@ func New() *Engine {
 		return engine.allocateContext()
 	}
 	return engine
+}
+
+func Default() *Engine {
+	engine := New()
+	engine.Logger = poleLog.Default()
+	engine.Use(Logging, Recovery)
+	engine.router.engine = engine
+	return engine
+}
+
+func (e *Engine) Use(middles ...MiddlewareFunc) {
+	e.middles = append(e.middles, middles...)
 }
 
 func (e *Engine) allocateContext() any {
